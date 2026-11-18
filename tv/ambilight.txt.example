@@ -1,0 +1,3 @@
+http://<IP-DO-ESP32>/json/state
+{"lor":2,"ps":3}
+{"lor":1,"ps":22}

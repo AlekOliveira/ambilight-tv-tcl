@@ -1,0 +1,14 @@
+# Valores reais da rede, IPs e MAC
+local/
+# Projeto à parte (fork público do Free My TV, com keystore)
+free-my-tv-icons/
+# Testes de captura (prints e vídeos de conteúdo), backups com dados da rede, visual da TV
+logs/
+backups/
+tv-backup/
+tv-fundos/
+tv-icones/
+icons/
+.claude/
+__pycache__/
+*.pyc

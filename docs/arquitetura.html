@@ -1,0 +1,125 @@
+<title>Ambilight DIY da TV TCL</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide signal-flow diagram (left to right, like the data), then two short reference blocks */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --fg:#17202b; --muted:#5b6878; --line:#c9d2dd;
+  --tv:#2a6fdb; --net:#0f9d8a; --hw:#d9771a; --pc:#7a5cd6; --ok:#1f8a4c; --warn:#b7791f; --bad:#c2413b;
+  --display:"Archivo",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --panel:#171e28; --fg:#e6ebf1; --muted:#93a1b2; --line:#2c3746;
+  --tv:#5b93ee; --net:#2cc3ac; --hw:#f0974a; --pc:#a58cf0; --ok:#4cc27e; --warn:#e0a84a; --bad:#ec6b63; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --panel:#171e28; --fg:#e6ebf1; --muted:#93a1b2; --line:#2c3746;
+  --tv:#5b93ee; --net:#2cc3ac; --hw:#f0974a; --pc:#a58cf0; --ok:#4cc27e; --warn:#e0a84a; --bad:#ec6b63; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1{font:800 clamp(26px,4.4vw,40px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:700 19px/1.2 var(--display);margin:0 0 10px}
+.lede{color:var(--muted);max-width:65ch;margin:8px 0 0}
+.diagram{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+svg{display:block;min-width:860px;width:100%;height:auto}
+svg text{font-family:var(--body);fill:var(--fg)}
+.t-title{font:700 15px var(--display)} .t-small{font-size:12px;fill:var(--muted)} .t-mono{font:500 11.5px var(--mono);fill:var(--muted)}
+.box{fill:var(--panel);stroke-width:2}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{padding-right:12px;white-space:nowrap}
+.pill{display:inline-block;font:500 12px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+code{font:13px var(--mono)}
+ul{margin:0;padding-left:18px} li{margin:4px 0}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ambilight DIY da TV TCL</h1>
+    <p class="lede">A própria TV captura a tela, calcula a cor de cada LED e manda tudo pronto pela rede. Quem recebe só repassa as cores para a fita. Sem caixa HDMI no meio.</p>
+  </header>
+
+  <div class="diagram" role="img" aria-label="Fluxo: TV com Stremio e app UAL captura e calcula cores, envia pacotes DDP pelo Wi-Fi para o PC hoje e para uma placa ESP ou Arduino no futuro, que acende a fita de LED">
+    <svg viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+      </defs>
+      <!-- TV -->
+      <rect class="box" x="16" y="40" width="300" height="250" rx="10" style="stroke:var(--tv)"/>
+      <text class="t-title" x="32" y="68" style="fill:var(--tv)">TV TCL 55" (Google TV)</text>
+      <text class="t-small" x="32" y="86">Amlogic, Android 12</text>
+      <rect x="32" y="100" width="268" height="62" rx="6" style="fill:none;stroke:var(--line)"/>
+      <text x="44" y="122" style="font-weight:500">1. Stremio ou SmartTube toca</text>
+      <text class="t-small" x="44" y="141">aceleração por hardware LIGADA</text>
+      <text class="t-small" x="44" y="155">(player desenha pela GPU, captura vê)</text>
+      <rect x="32" y="172" width="268" height="104" rx="6" style="fill:none;stroke:var(--line)"/>
+      <text x="44" y="194" style="font-weight:500">2. App Universal Ambient Light</text>
+      <text class="t-small" x="44" y="213">captura a tela (MediaProjection)</text>
+      <text class="t-small" x="44" y="229">lê as bordas → 188 cores</text>
+      <text class="t-small" x="44" y="245">60 cima · 34 dir · 60 baixo · 34 esq</text>
+      <text class="t-small" x="44" y="261">suaviza e envia ~15×/s</text>
+
+      <!-- network -->
+      <line x1="316" y1="165" x2="452" y2="165" style="stroke:var(--net);stroke-width:2.5" marker-end="url(#a)"/>
+      <text class="t-title" x="330" y="146" style="fill:var(--net)">Wi-Fi · UDP</text>
+      <text class="t-mono" x="330" y="190">DDP porta 4048</text>
+      <text class="t-mono" x="330" y="206">574 bytes/pacote</text>
+      <text class="t-mono" x="330" y="222">10 cabeçalho + 188×RGB</text>
+
+      <!-- today: PC -->
+      <rect class="box" x="458" y="40" width="250" height="150" rx="10" style="stroke:var(--pc)"/>
+      <text class="t-title" x="474" y="68" style="fill:var(--pc)">Hoje: PC (testes)</text>
+      <text class="t-small" x="474" y="90">raw_monitor.py → bytes ao vivo</text>
+      <text class="t-small" x="474" y="108">capture_analysis.py → relatório</text>
+      <text class="t-small" x="474" y="126">led_preview.py → simulador</text>
+      <text class="t-mono" x="474" y="150">http://&lt;ip-do-pc&gt;:8090</text>
+      <text class="t-small" x="474" y="172">celular abre e compara com a TV</text>
+
+      <!-- future: board -->
+      <rect class="box" x="458" y="230" width="250" height="150" rx="10" style="stroke:var(--hw)"/>
+      <text class="t-title" x="474" y="258" style="fill:var(--hw)">Final: placa barata</text>
+      <text x="474" y="282" style="font-weight:500">ESP8266/ESP32 + WLED</text>
+      <text class="t-small" x="474" y="300">recebe o DDP direto pelo Wi-Fi</text>
+      <text x="474" y="328" style="font-weight:500">ou Arduino Nano</text>
+      <text class="t-small" x="474" y="346">cabo USB na TV (Adalight)</text>
+      <text class="t-small" x="474" y="364">só repassa as cores, não calcula</text>
+      <path d="M384,165 C384,300 410,305 452,305" style="fill:none;stroke:var(--net);stroke-width:2.5;stroke-dasharray:6 5" marker-end="url(#a)"/>
+
+      <!-- strip -->
+      <line x1="708" y1="305" x2="770" y2="305" style="stroke:var(--hw);stroke-width:2.5" marker-end="url(#a)"/>
+      <rect x="790" y="210" width="170" height="104" rx="4" style="fill:none;stroke:var(--line);stroke-width:10"/>
+      <rect x="790" y="210" width="170" height="104" rx="4" style="fill:none;stroke:var(--tv);stroke-width:4;stroke-dasharray:3 4"/>
+      <text class="t-title" x="796" y="350">Fita WS2812B</text>
+      <text class="t-small" x="796" y="368">188 LEDs atrás da TV</text>
+      <text class="t-small" x="796" y="386">fonte 5 V própria</text>
+
+      <text class="t-small" x="16" y="430">Linha contínua: o que já funciona. Tracejada: próxima etapa (hardware ainda não comprado).</text>
+      <text class="t-small" x="16" y="450">Toda a parte pesada (captura, cálculo, suavização) roda na TV.</text>
+    </svg>
+  </div>
+
+  <section class="grid">
+    <div class="card">
+      <h2>O que funciona hoje</h2>
+      <table>
+        <tr><td>Stremio</td><td><span class="pill ok">ok</span> player externo (Kodi/mpv), aceleração ligada</td></tr>
+        <tr><td>YouTube</td><td><span class="pill ok">ok</span> via SmartTube (app oficial sai preto)</td></tr>
+        <tr><td>Menus e apps</td><td><span class="pill ok">ok</span></td></tr>
+        <tr><td>HDMI (Switch)</td><td><span class="pill warn">depois</span> placa de captura</td></tr>
+        <tr><td>Netflix, Prime</td><td><span class="pill bad">fora</span> proteção contra cópia</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Números medidos (Stremio, 30 s)</h2>
+      <ul>
+        <li><b>15 pacotes/s</b>, intervalo estável de ~72 ms</li>
+        <li><b>93%</b> dos quadros diferentes: acompanha a cena</li>
+        <li>App de luz usa <b>~4%</b> de CPU da TV</li>
+        <li>Stremio decodificando sem hardware: <b>~1 núcleo</b> em 1080p</li>
+        <li>Tráfego: <code>~8,6 KB/s</code>, folga para ESP; Arduino a 115200 baud aguenta ~20/s</li>
+      </ul>
+    </div>
+  </section>
+</div>
