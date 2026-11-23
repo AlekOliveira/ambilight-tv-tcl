@@ -3,7 +3,7 @@
 Correções e melhorias para fazer depois.
 
 ## Rede
-- [ ] Reservar IP fixo para o ESP32 no roteador (MAC e IPs reais em `local/rede.md`, fora do Git). Já mudou duas vezes, uma a cada reinício do roteador. Sem reserva, o UAL pode acabar mandando dados para outro aparelho. Depois disso, conferir o host no UAL.
+- [x] IP fixo para o ESP32 (2026-11-23): configurado no próprio WLED (Plano B abaixo), no fim da faixa da rede (`.250`), longe dos endereços que o DHCP da Claro costuma dar. UAL, gatilho do Free My TV e Alexa apontam para ele. Valores reais em `local/rede.md`.
   - O roteador é da Claro, com firmware limitado. A reserva de DHCP pode não existir ou não funcionar direito.
   - Plano B, se não der no roteador: IP fixo no próprio WLED (Config > WiFi Setup > Static IP), escolhendo um endereço fora da faixa do DHCP da Claro para não colidir com outro aparelho.
   - Plano C: usar um roteador próprio atrás do da Claro.
@@ -42,7 +42,7 @@ Correções e melhorias para fazer depois.
 - [ ] Gatilho ao ligar a TV: app de automação na TV (ex.: MacroDroid) com gatilho "tela ligada" mandando o comando acima, com atraso de ~5 s enquanto o ESP32 conecta no Wi-Fi. Precisa da autorização do usuário para instalar.
 - "Autostart permissions" do UAL está "Not granted" (concede por ADB). Não mexi; até agora a captura voltou sozinha ao acordar.
 - [x] Gatilho ao ligar a TV feito no Free My TV (2026-11-07): `RemoteKeyService` escuta "tela ligada" e manda `{"lor":2,"ps":3}` para o WLED. Endereço no arquivo da TV `Android/data/io.freemytv/files/ambilight.txt` (linha 1 a URL, linha 2 o JSON). Testado duas vezes: cometa ~6 s e depois o UAL assume.
-- [ ] Se o IP do ESP32 mudar, atualizar esse arquivo na TV (`adb push`) e o host no UAL.
+- Se um dia o IP do ESP32 mudar: atualizar o `ambilight.txt` na TV (`adb push`), o host no UAL e rodar "descobrir dispositivos" na Alexa.
 - Abertura trocada para Preenchimento (preset 12, Wipe azul, ~4 s) em 2026-11-07. Opções de teste guardadas nos presets 11 a 17.
 - [x] Encerramento (presets 20, 23, 21, playlist 22): moldura laranja que recolhe LED por LED (efeito Percent, sem suavização), ~1 s. Free My TV manda a linha 3 do `ambilight.txt` (`{"lor":1,"ps":22}`) quando a tela desliga. Testado.
 - [ ] Com a fonte, deixar o recolher mais lento (preset 23 `sx` menor e preset 22 `dur` maior): hoje é rápido porque a TV corta o USB ~1,5 s depois de desligar.

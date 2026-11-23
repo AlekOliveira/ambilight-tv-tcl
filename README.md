@@ -99,7 +99,8 @@ vídeo tem prioridade. Com ela desligada, a fita vira luminária.
   com o player interno e decodificação por hardware. Funcionam o SmartTube (com a correção de captura ligada nas
   opções de desenvolvedor do player) e o Stremio com mpv ou Kodi como player externo.
 - A entrada HDMI fica bloqueada para captura sem root.
-- O IP do ESP32 muda quando o roteador reinicia. É preciso uma reserva de DHCP ou um IP fixo no WLED.
+- O IP do ESP32 mudava quando o roteador reiniciava (DHCP). Ficou fixo no próprio WLED (*Config → WiFi Setup → Static IP*),
+  num endereço alto da faixa, que o DHCP raramente usa. A TV, o gatilho e a Alexa apontam para ele.
 
 Para montar do zero, veja o [guia](docs/guia-ambilight-diy.md).
 
