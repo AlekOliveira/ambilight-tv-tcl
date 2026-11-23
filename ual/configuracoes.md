@@ -70,8 +70,14 @@ O app não exporta as configurações, então elas estão aqui, lidas da tela em
 |---|---|---|
 | Grab on Boot | ligado | a captura volta sozinha quando a TV liga ou acorda |
 | Keep running in standby | desligado | com ele ligado, os LEDs ficavam acesos com a TV em standby |
-| Autostart permissions | não concedido | a captura voltou sozinha ao acordar mesmo assim |
+| Autostart permissions | concedido pelo ADB (2026-11-23) | sem ela, depois do standby a TV às vezes pedia "Iniciar gravação?" e a fita parava até alguém confirmar |
 | Language | Default | |
+
+Comando usado:
+
+```bash
+adb shell appops set com.vasmarfas.UniversalAmbientLight PROJECT_MEDIA allow
+```
 
 ## Valores de cor: histórico
 
